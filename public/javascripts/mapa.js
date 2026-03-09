@@ -49,6 +49,8 @@ btnAparcar.addEventListener('click', () => {
                     marcadorCoche = null;
                 }
 
+                miMapa.setView([36.72016, -4.42034], 14); // volvemos a la vista genérica del mapa
+
                 // mostramos el overlay borroso
                 mapOverLay.classList.remove('hidden');
 
