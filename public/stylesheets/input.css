@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Paleta de colores con tonos fríos azules y profesionales en en negro */
+@theme {
+    --color-brand-light: #798BF2;
+    --color-brand-primary: #627FD9;
+    --color-brand-secondary: #2A86BF;
+    --color-brand-accent: #419BBF;
+    --color-brand-dark: #0D0D0D;  
+}
