@@ -19,6 +19,14 @@ const iconoCoche = L.icon({
     popupAnchor : [0, -40]
 })
 
+// marcador personalizado ubicacion del usuario
+const iconoUsuario = L.icon({
+    iconUrl : '/images/usuario.svg',
+    iconSize : [30, 30],
+    iconAnchor : [15, 30],
+    popupAnchor : [0, -30]
+})
+
 
 // ========================================
 // Variables de estado y elementos del DOM 
@@ -27,7 +35,9 @@ const btnAparcar = document.querySelector('#btn-aparcar');
 const mapOverLay = document.querySelector('#map-overlay');
 
 let marcadorCoche = null; // variable para almacenar el marcador del coche
+let marcadorUsuario = null; // variable para almacenar el marcador del usuario
 let aparcado = false; // variable para controlar si el coche ya está aparcado
+let seguimientoUsuario = null; // variable para controlar el seguimiento del usuario
 
 
 // ================================================
@@ -95,6 +105,9 @@ function establacerAparcamiento (latitud, longitud, guardarEnLocalStorage = fals
 
         localStorage.setItem('aparcamientoEnCurso', JSON.stringify(datosAparcamiento));
     }
+
+    iniciarSeguimiento(); // Iniciamos el seguimiento del usuario para mostrar su ubicación en el mapa
+
 };
 
 /**
@@ -109,6 +122,21 @@ function limpiarAparcamiento() {
         marcadorCoche = null;
 
     }
+
+    if (seguimientoUsuario !== null) {
+
+        navigator.geolocation.clearWatch(seguimientoUsuario); // Detenemos el seguimiento del usuario
+        seguimientoUsuario = null;
+
+    }
+
+    if (marcadorUsuario) {
+
+        miMapa.removeLayer(marcadorUsuario);
+        marcadorUsuario = null;
+
+    }
+
     miMapa.setView([36.72016, -4.42034], 14); // volvemos a la vista genérica del mapa
 
     actualizarInterfazNoAparcado();
@@ -144,6 +172,10 @@ function finalizarAparcamiento() {
 
 }
 
+/**
+ * Obtiene la ubicación actual que amrca el aparcamiento, establece el marcador del coche,
+ * y muestra alertas de error si no se puede obtener la ubicacin.
+*/
 function iniciarAparcamiento() {
 
     btnAparcar.disabled = true;
@@ -188,6 +220,47 @@ function iniciarAparcamiento() {
 
 }
 
+function iniciarSeguimiento() {
+
+    if (seguimientoUsuario !== null) return // ya estamos siguiendo al usuario
+
+    if ("geolocation" in navigator) {
+
+        // watchPosition devuelve un ID con el que podemos controlar el seguimiento.
+        seguimientoUsuario = navigator.geolocation.watchPosition(
+
+            (posicion) => {
+
+                const latitud = posicion.coords.latitude;
+                const longitud = posicion.coords.longitude;
+
+                // Si el marcador del usuario no existe, lo creamos. Si ya existe, actualizamos su posición.
+                if (!marcadorUsuario) {
+
+                    marcadorUsuario = L.marker([latitud, longitud], {icon: iconoUsuario}).addTo(miMapa);
+                    marcadorUsuario.bindPopup("Tu ubicación actual").openPopup();
+
+                } else {
+                    
+                    marcadorUsuario.setLatLng([latitud, longitud]);
+
+                }
+
+            },
+            (error) => {
+                console.error("Error al obtener la geolocalización: ", error);
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 10000, // Permite usar una posición en caché de hasta 10 segundos
+            }
+
+        );
+
+    }
+
+}
+
 // ===================================================================
 // Inicializacion al cargar la página. (no hay aparcamiento en curso) 
 // ===================================================================
@@ -195,6 +268,7 @@ const parkingGuardadoEnCurso = localStorage.getItem('aparcamientoEnCurso');
 if (parkingGuardadoEnCurso) {
     const datosAparcamiento = JSON.parse(parkingGuardadoEnCurso);
     establacerAparcamiento(datosAparcamiento.latitud, datosAparcamiento.longitud, false);
+    iniciarSeguimiento(); // aunque el seguimiento ya se llama en la funcion establacerAparcamiento, lo llamamos aquí para asegurarnos de que se inicie el seguimiento si recargamos la página con un aparcamiento en curso.
 }
 
 // =====================
