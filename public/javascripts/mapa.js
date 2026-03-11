@@ -3,7 +3,9 @@
 // =================================================================================
 
 // Seteamos la vista centrada en malaga. ([latitud, longitud], zoom)
-const miMapa = L.map('map').setView([36.72016, -4.42034], 14);
+const miMapa = L.map('map', {
+    
+}).setView([36.72016, -4.42034], 14);
 
 // Plantilla de mapa
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

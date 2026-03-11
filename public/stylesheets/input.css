@@ -8,3 +8,10 @@
     --color-brand-accent: #419BBF;
     --color-brand-dark: #0D0D0D;  
 }
+
+/* Empujamos lso controles de zoom hacía abajo para evitar que choquen visulamente con las estasdisticas de tiempo y distancia */
+@layer components {
+    .leaflet-top.leaflet-left {
+    margin-top: 5rem; /* Unos 80px hacia abajo */
+  }
+}
