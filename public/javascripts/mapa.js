@@ -18,14 +18,38 @@ const iconoCoche = L.icon({
     popupAnchor : [0, -40]
 })
 
-let marcadorCoche = null; // variable para almacenar el marcador del coche
-
 // ------------------ Lógica de geolocalización ------------------ //
 
 const btnAparcar = document.querySelector('#btn-aparcar');
 const mapOverLay = document.querySelector('#map-overlay');
+let marcadorCoche = null; // variable para almacenar el marcador del coche
 let aparcado = false; // variable para controlar si el coche ya está aparcado
 
+// recuperamos la ubicación del coche aparcado al cargar la página, si existe
+const parkingGuardadoEnCurso = localStorage.getItem('aparcamientoEnCurso');
+if (parkingGuardadoEnCurso) {
+
+    const parkingEnCursoRecuperado = JSON.parse(parkingGuardadoEnCurso);
+
+    // actualizamos la vista del mapa a la ubicación guardada
+    miMapa.setView([parkingEnCursoRecuperado.latitud, parkingEnCursoRecuperado.longitud], 18);
+
+    // creamos el marcador del coche en la ubicación guardada
+    marcadorCoche = L.marker([parkingEnCursoRecuperado.latitud, parkingEnCursoRecuperado.longitud], {icon: iconoCoche}).addTo(miMapa);
+    marcadorCoche.bindPopup("Vehículo aparcado").openPopup(); // añadimos un popup al marcador del coche
+
+    mapOverLay.classList.add('hidden'); // ocultamos el overlay borroso para mostrar el mapa claramente
+
+    // Cambiamos el diseño del botón para indicar que el coche está aparcado
+    btnAparcar.disabled = false;
+    btnAparcar.textContent = "Finalizar Aparcamiento";
+    btnAparcar.className = "w-full bg-emerald-400 text-white py-4 rounded-2xl shadow-xl font-bold text-lg flex items-center justify-center gap-2 active:bg-emerald-500 transition-colors";
+
+    aparcado = true; // actualizamos el estado del coche a aparcado
+
+}
+
+// Pinta el marcarcador del coche donde aparco y guarda la posicion en localStorage
 btnAparcar.addEventListener('click', () => {
 
     if (aparcado) {
@@ -102,6 +126,16 @@ btnAparcar.addEventListener('click', () => {
                 btnAparcar.className = "w-full bg-emerald-400 text-white py-4 rounded-2xl shadow-xl font-bold text-lg flex items-center justify-center gap-2 active:bg-emerald-500 transition-colors";
 
                 aparcado = true; // actualizamos el estado del coche a aparcado
+
+                // creamos el paquete de datos con la ubicacion para guardarlo en localStorage
+                const datosAparcamiento = {
+                    latitud: latitud,
+                    longitud: longitud,
+                    timestamp : Date.now()
+                };
+
+                localStorage.setItem('aparcamientoEnCurso', JSON.stringify(datosAparcamiento)); // guardamos los datos en localStorage para poder recuperarlos después
+
             },
 
             // si el usuario no acepta o no habilita la geolocalización, esta función se ejecuta
