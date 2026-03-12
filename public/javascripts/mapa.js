@@ -40,11 +40,16 @@ const iconoUsuario = L.icon({
 // ========================================
 const btnAparcar = document.querySelector('#btn-aparcar');
 const mapOverLay = document.querySelector('#map-overlay');
+const panelInfo = document.querySelector('#panel-info');
+const infoDistancia = document.querySelector('#info-distancia');
+const infoTiempo = document.querySelector('#info-tiempo');
 
 let marcadorCoche = null; // variable para almacenar el marcador del coche
 let marcadorUsuario = null; // variable para almacenar el marcador del usuario
 let aparcado = false; // variable para controlar si el coche ya está aparcado
 let seguimientoUsuario = null; // variable para controlar el seguimiento del usuario
+let intervaloActualizacion = null; // variable para controlar el intervalo de actualización del tiempo
+let horaAparcamiento = null; // variable para almacenar la hora de inicio del aparcamiento
 
 
 // ================================================
@@ -59,6 +64,7 @@ let seguimientoUsuario = null; // variable para controlar el seguimiento del usu
 function actualizarInterfazAparcado() {
 
     mapOverLay.classList.add('hidden');
+    panelInfo.classList.remove('hidden');
     btnAparcar.disabled = false;
     btnAparcar.textContent = "Finalizar Aparcamiento";
     btnAparcar.className = "w-full bg-emerald-400 text-white py-4 rounded-2xl shadow-xl font-bold text-lg flex items-center justify-center gap-2 active:bg-emerald-500 transition-colors";
@@ -73,6 +79,7 @@ function actualizarInterfazAparcado() {
 function actualizarInterfazNoAparcado() {
 
     mapOverLay.classList.remove('hidden');
+    panelInfo.classList.add('hidden');
     btnAparcar.disabled = false;
     btnAparcar.textContent = "Aparcar Aquí";
     btnAparcar.className = "w-full bg-brand-primary text-white py-4 rounded-2xl shadow-xl font-bold text-lg flex items-center justify-center gap-2 active:bg-brand-secondary transition-colors disabled:opacity-70 disabled:cursor-not-allowed";
@@ -85,10 +92,11 @@ function actualizarInterfazNoAparcado() {
 // ==========================================================================
 
 /**
- * Establece el marcador del coche dada la ubicación porporcionada por la geoLocation o por  LocalStorage.
+ * Establece el marcador del coche dada la ubicación porporcionada por la geoLocation o por LocalStorage.
+ * Inicializa el reloj de aparcamiento y el seguimiento del usuario para mostrar su ubicación en el mapa.
  * Guarda la ubicación en localStorage si no tenemos aparcamiento en curso.
 */
-function establacerAparcamiento (latitud, longitud, guardarEnLocalStorage = false) {
+function establacerAparcamiento (latitud, longitud, guardarEnLocalStorage = false, tiempoAparcamiento = Date.now()) {
 
     miMapa.setView([latitud, longitud], 18);
 
@@ -101,6 +109,7 @@ function establacerAparcamiento (latitud, longitud, guardarEnLocalStorage = fals
     marcadorCoche.bindPopup("Vehículo aparcado").openPopup();
 
     actualizarInterfazAparcado();
+    iniciarRelojAparcamiento(tiempoAparcamiento); 
 
     if (guardarEnLocalStorage) {
 
@@ -147,7 +156,53 @@ function limpiarAparcamiento() {
     miMapa.setView([36.72016, -4.42034], 14); // volvemos a la vista genérica del mapa
 
     actualizarInterfazNoAparcado();
+    detenerRelojAparcamiento();
     localStorage.removeItem('aparcamientoEnCurso'); // eliminamos el aparcamiento en curso del localStorage
+
+}
+
+/**
+ * Calcula el tiempo transcurrido desde que se inicio el seguimiento 
+ * hasta cada vez que se ejecuta esta función. 
+*/
+function calcularYMostrarTiempo() {
+
+    if (!horaAparcamiento) return;
+
+    const horaActual = Date.now(); // hora exacta en el momento actual
+    const diferenciaMs = horaActual - horaAparcamiento;
+
+    const minutos = Math.floor(diferenciaMs / 60000); // convertimos la diferencia a minutos
+
+    infoTiempo.textContent = minutos + " min";
+
+}
+
+/**
+ * Inicia el intervalo para calcular y mostrar el tiempo transcurrido 
+*/
+function iniciarRelojAparcamiento(tiempoInicial) {
+
+    horaAparcamiento = tiempoInicial;
+
+    calcularYMostrarTiempo(); // calculamos el tiempo inmediatamente para mostrarlo sin esperar al primer intervalo
+
+    intervaloActualizacion = setInterval(calcularYMostrarTiempo, 60000); // actualizamos el tiempo cada 60segundos
+
+}
+
+/**
+ * Apaga el contandor y resetea el tiempo de aparcamiento 
+*/
+function detenerRelojAparcamiento() {
+
+    if (intervaloActualizacion) {
+        clearInterval(intervaloActualizacion);
+        intervaloActualizacion = null;
+    }
+
+    horaAparcamiento = null;
+    infoTiempo.textContent = "-- min";
 
 }
 
@@ -204,7 +259,7 @@ function iniciarAparcamiento() {
 
         (posicion) => {
 
-            establacerAparcamiento(posicion.coords.latitude, posicion.coords.longitude, true);
+            establacerAparcamiento(posicion.coords.latitude, posicion.coords.longitude, true, Date.now() );
 
         },
         (error) => {
@@ -253,6 +308,22 @@ function iniciarSeguimiento() {
 
                 }
 
+                // Calculamos la distancia entre el usuario y el coche
+                if (marcadorCoche) {
+
+                    const ubicacionUsuario = L.latLng(latitud, longitud);
+                    const ubicacionCoche = marcadorCoche.getLatLng();
+
+                    const distanciaMetros = Math.round(ubicacionUsuario.distanceTo(ubicacionCoche));
+
+                    if (distanciaMetros > 1000) {
+                        infoDistancia.textContent = (distanciaMetros/1000).toFixed(2) + " km";
+                    } else {
+                        infoDistancia.textContent = distanciaMetros + " m";
+                    }
+
+                }
+
             },
             (error) => {
                 console.error("Error al obtener la geolocalización: ", error);
@@ -274,7 +345,7 @@ function iniciarSeguimiento() {
 const parkingGuardadoEnCurso = localStorage.getItem('aparcamientoEnCurso');
 if (parkingGuardadoEnCurso) {
     const datosAparcamiento = JSON.parse(parkingGuardadoEnCurso);
-    establacerAparcamiento(datosAparcamiento.latitud, datosAparcamiento.longitud, false);
+    establacerAparcamiento(datosAparcamiento.latitud, datosAparcamiento.longitud, false, datosAparcamiento.timestamp);
     iniciarSeguimiento(); // aunque el seguimiento ya se llama en la funcion establacerAparcamiento, lo llamamos aquí para asegurarnos de que se inicie el seguimiento si recargamos la página con un aparcamiento en curso.
 }
 
