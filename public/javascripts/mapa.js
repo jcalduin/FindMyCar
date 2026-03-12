@@ -132,6 +132,12 @@ function establacerAparcamiento (latitud, longitud, guardarEnLocalStorage = fals
 */
 function limpiarAparcamiento() {
 
+    const parkingGuardadoEnCurso = localStorage.getItem('aparcamientoEnCurso');
+    if (parkingGuardadoEnCurso) {
+        const datosAparcamiento = JSON.parse(parkingGuardadoEnCurso);
+        guardarHistorialLocalStorage(datosAparcamiento); // guardamos el aparcamiento finalizado en el historial del localStorag
+    }
+
     if (marcadorCoche) {
 
         miMapa.removeLayer(marcadorCoche);
@@ -204,6 +210,37 @@ function detenerRelojAparcamiento() {
     horaAparcamiento = null;
     infoTiempo.textContent = "-- min";
 
+}
+
+/**
+ * Guarda los aparacamientos finalizados en loclalStorge en un array
+ * para mostrar un historial de aparcamientos.
+*/
+function guardarHistorialLocalStorage(datosAparcamiento) {
+
+    const historialAparcamientos = localStorage.getItem('historialAparcamientos');
+    let historial = [];
+
+    if (historialAparcamientos) {
+        historial = JSON.parse(historialAparcamientos);
+    }
+
+    // calculo del tiempo de aparcamiento en minutos
+    const ahora = Date.now();
+    const tiempoAparcamientoMinutos = Math.round((ahora - datosAparcamiento.timestamp) / 60000);
+
+    const registroAparcamiento = {
+        id : ahora, // ID unico.
+        latitud : datosAparcamiento.latitud,
+        longitud : datosAparcamiento.longitud,
+        inicio : datosAparcamiento.timestamp,
+        fin : ahora,
+        tiempoTotalMinutos : tiempoAparcamientoMinutos
+    }
+
+    historial.unshift(registroAparcamiento); // añadimos el nuevo registro al inicio del array
+
+    localStorage.setItem('historialAparcamientos', JSON.stringify(historial));
 }
 
 // ==================================================
