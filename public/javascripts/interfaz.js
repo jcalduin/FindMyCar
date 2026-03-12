@@ -13,6 +13,8 @@ const btnAbrirHistorial = document.querySelector('#btn-historial'); // El botón
 const modalHistorial = document.querySelector('#modal-historial');
 const modalHistorialBackdrop = document.querySelector('#modal-historial-backdrop');
 const btnCerrarModal = document.querySelector('#btn-cerrar-modal');
+const listaHistorial = document.querySelector('#lista-historial');
+const templateTarjeta = document.querySelector('#template-tarjeta-aparcamiento');
 
 // ===================
 // FUNCIONES DEL MENÚ  
@@ -48,6 +50,8 @@ function cerrarMenu() {
 
 // Funcion para abrir el modal del historial de aparcamientos
 function abrirModalHistorial() {
+
+    pintarHistorial(); 
     
     cerrarMenu();
 
@@ -70,6 +74,63 @@ function cerrarModalHistorial() {
     modalHistorial.classList.remove('opacity-100', 'scale-100');
     modalHistorial.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
 
+}
+
+// ===========
+// UTILIDADES
+// ===========
+
+// Funcion para formatear la fecha y hora de aparcamiento
+function convertirFecha(timestamp) {
+
+    const fecha = new Date(timestamp);
+    const opciones = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    };
+
+    return fecha.toLocaleDateString('es-ES', opciones) + 'h';
+
+}
+
+// ==========================================
+// LÓGICA DE DATOS (El Pintor)
+// ==========================================
+
+// pintar historial
+function pintarHistorial() {
+    
+    listaHistorial.innerHTML = '';
+
+    // cogemos datros del locaslstorge
+    const historialGuardado = localStorage.getItem('historialAparcamientos');
+    let historial = [];
+    if (historialGuardado) {
+        historial = JSON.parse(historialGuardado);
+    }
+
+    // no existe aún historial en localstorage o el historial esta vacio
+    if (historial.length === 0) {
+        listaHistorial.innerHTML = '<p class="text-center text-gray-500 py-8 text-sm">Aún no tienes aparcamientos guardados.</p>';
+        return; // Detenemos la función aquí
+    }
+
+    // recorremos historial y pintamos las tarjetas
+    historial.forEach(registro => {
+        
+        const tarjetaClonada = templateTarjeta.content.cloneNode(true);
+
+        tarjetaClonada.querySelector('.txt-fecha').textContent = convertirFecha(registro.inicio);
+        tarjetaClonada.querySelector('.txt-duracion').textContent = `Aparcado durante ${registro.tiempoTotalMinutos} min`;
+
+        const btnBorrar = tarjetaClonada.querySelector('.btn-borrar-historial'); 
+        btnBorrar.dataset.id = registro.id; // preparamos el id para el borrado
+
+        listaHistorial.appendChild(tarjetaClonada);
+    });
 }
 
 // =====================
