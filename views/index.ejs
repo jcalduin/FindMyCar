@@ -58,6 +58,7 @@
   <!-- backdrop del menu offcanvas -->
   <div id="menu-backdrop" class="fixed inset-0 bg-brand-dark/40 backdrop-blur-sm z-3000 opacity-0 pointer-events-none transition-opacity duration-300"></div>
 
+  <!-- Menu lateral offcanvas -->
   <div id="menu-lateral" class="fixed top-0 right-0 h-full w-68 bg-white z-3010 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
     
     <div class="p-5 flex justify-between items-center border-b border-gray-100">
@@ -82,6 +83,55 @@
     </div>
 
   </div>
+
+  <!-- backdrop ventanas modales -->
+  <div id="modal-historial-backdrop" class="fixed inset-0 bg-brand-dark/50 backdrop-blur-sm z-4000 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+  <!-- Modal Historial de Aparcamientos -->
+  <div id="modal-historial" class="fixed inset-0 z-4010 flex items-center justify-center p-4 opacity-0 pointer-events-none transform scale-95 transition-all duration-300">
+    
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl flex flex-col overflow-hidden max-h-[80vh]">
+      
+      <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white z-10 shrink-0">
+        <h3 class="font-bold text-brand-primary text-xl tracking-tight">Mis Aparcamientos</h3>
+        <button id="btn-cerrar-modal" class="text-gray-400 hover:text-brand-accent p-1 transition-colors bg-gray-50 hover:bg-brand-light/10 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div id="lista-historial" class="p-5 overflow-y-auto grow flex flex-col gap-4 bg-gray-50/50">
+        
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Template tarjeta de aparcamiento para el historial -->
+  <template id="template-tarjeta-aparcamiento">
+    <div class="tarjeta-item bg-white border border-gray-100 p-4 rounded-2xl flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+      
+      <div class="bg-brand-light/10 p-3 rounded-full text-brand-primary shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+        </svg>
+      </div>
+      
+      <div class="grow">
+        <p class="txt-fecha font-bold text-gray-800 text-sm">--</p>
+        <p class="txt-duracion text-gray-500 text-xs mt-0.5">--</p>
+      </div>
+
+      <button class="btn-borrar-historial text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors shrink-0" title="Eliminar del historial">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+        </svg>
+      </button>
+
+    </div>
+  </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/javascripts/interfaz.js"></script>
