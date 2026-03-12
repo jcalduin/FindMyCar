@@ -29,9 +29,9 @@
     
     <div id="map" class="w-full h-full z-0"></div>
     
-    <div id="map-overlay" class="absolute inset-0 bg-slate-800/40 backdrop-blur-3px z-500 transition-opacity duration-500"></div>
+    <div id="map-overlay" class="absolute inset-0 bg-slate-800/40 backdrop-blur-3px z-20 transition-opacity duration-500"></div>
 
-    <div id="panel-info" class="hidden absolute top-6 left-1/2 -translate-x-1/2 z-999 w-auto min-w-240px max-w-90% bg-white/30 backdrop-blur-md px-4 py-2 rounded-2xl shadow-md border border-white/50 flex flex-row justify-evenly items-center transition-all duration-300">
+    <div id="panel-info" class="hidden absolute top-6 left-1/2 -translate-x-1/2 z-30 w-auto min-w-240px max-w-90% bg-white/30 backdrop-blur-md px-4 py-2 rounded-2xl shadow-md border border-white/50 flex flex-row justify-evenly items-center transition-all duration-300">
 
       <div class="flex flex-col items-center w-1/2">
         <span class="text-gray-600 text-8px uppercase tracking-wider font-extrabold mb-0.5">Distancia</span>
@@ -47,7 +47,7 @@
 
     </div>
 
-    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-999 w-11/12 max-w-sm">
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 w-11/12 max-w-sm">
       <button id="btn-aparcar" class="w-full bg-brand-primary text-white py-4 rounded-2xl shadow-xl font-bold text-lg flex items-center justify-center gap-2 active:bg-brand-secondary transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
         Aparcar Aquí
       </button>
@@ -56,10 +56,10 @@
   </main>
 
   <!-- backdrop del menu offcanvas -->
-  <div id="menu-backdrop" class="fixed inset-0 bg-brand-dark/40 backdrop-blur-sm z-3000 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+  <div id="menu-backdrop" class="fixed inset-0 bg-brand-dark/40 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300"></div>
 
   <!-- Menu lateral offcanvas -->
-  <div id="menu-lateral" class="fixed top-0 right-0 h-full w-68 bg-white z-3010 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+  <div id="menu-lateral" class="fixed top-0 right-0 h-full w-68 bg-white z-40 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
     
     <div class="p-5 flex justify-between items-center border-b border-gray-100">
       <span class="font-bold text-brand-primary text-lg">Mi Cuenta</span>
@@ -81,14 +81,14 @@
         Mis Aparcamientos
       </button>
     </div>
-
+    
   </div>
 
   <!-- backdrop ventanas modales -->
-  <div id="modal-historial-backdrop" class="fixed inset-0 bg-brand-dark/50 backdrop-blur-sm z-4000 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+  <div id="modal-historial-backdrop" class="fixed inset-0 bg-brand-dark/50 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
 
   <!-- Modal Historial de Aparcamientos -->
-  <div id="modal-historial" class="fixed inset-0 z-4010 flex items-center justify-center p-4 opacity-0 pointer-events-none transform scale-95 transition-all duration-300">
+  <div id="modal-historial" class="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transform scale-95 transition-all duration-300">
     
     <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl flex flex-col overflow-hidden max-h-[80vh]">
       

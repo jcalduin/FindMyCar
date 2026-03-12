@@ -96,9 +96,32 @@ function convertirFecha(timestamp) {
 
 }
 
-// ==========================================
-// LÓGICA DE DATOS (El Pintor)
-// ==========================================
+// funcion generica para mostrar alertas.
+function mostrarAlerta(titulo, texto, icono = 'info', esConfirmacion = false, txtConfirmar = 'Aceptar') {
+
+    const colorBoton = (icono === 'warning') ? '#ef4444' : '#798BF2'; 
+
+    return Swal.fire({
+        title: titulo,
+        text: texto,
+        icon: icono,
+        showCancelButton: esConfirmacion, // Solo muestra "Cancelar" si esConfirmacion es true
+        confirmButtonColor: colorBoton,
+        cancelButtonColor: '#9ca3af',
+        confirmButtonText: txtConfirmar,
+        cancelButtonText: 'Cancelar',
+        customClass: {
+            popup: 'rounded-3xl w-11/12 max-w-sm border border-gray-100 shadow-2xl',
+            title: 'text-brand-primary font-bold text-xl',
+            confirmButton: 'rounded-xl font-bold px-6',
+            cancelButton: 'rounded-xl font-medium px-6'
+        }
+    });
+}
+
+// ================
+// LÓGICA DE DATOS 
+// ================
 
 // pintar historial
 function pintarHistorial() {
@@ -133,6 +156,22 @@ function pintarHistorial() {
     });
 }
 
+// Elimina un aparcamiento del localstorage y refresca la vista
+function eliminarAparcamiento(id) {
+
+    const historialGuardado = localStorage.getItem('historialAparcamientos');
+    if (!historialGuardado) return;
+
+    let historial = JSON.parse(historialGuardado);
+    historial = historial.filter(registro => registro.id !== Number(id)); //nos devuelve un nuevo array sin el registro que queremos eliminar
+
+    //volvemos a guardar esa nueva lista en localsttorage
+    localStorage.setItem('historialAparcamientos', JSON.stringify(historial));
+
+    pintarHistorial(); 
+
+}
+
 // =====================
 // Manejador de eventos
 // =====================
@@ -154,3 +193,24 @@ btnCerrarModal.addEventListener('click', cerrarModalHistorial);
 
 // click fuera del modal (en el backdrop)
 modalHistorialBackdrop.addEventListener('click', cerrarModalHistorial);
+
+// click en la papelera para eliminar el registro
+listaHistorial.addEventListener('click', async (e) => {
+
+    const btnBorrar = e.target.closest('.btn-borrar-historial');
+
+    if (btnBorrar) {
+
+        const idAparcamiento = btnBorrar.dataset.id;
+
+        const respuesta = await mostrarAlerta(
+            '¿Eliminar aparcamiento?',
+            'Esta ubicacion se borrar para siempre',
+            true,
+            'eliminar'
+        );
+
+        if (respuesta.isConfirmed) eliminarAparcamiento(idAparcamiento);
+    }
+
+});
