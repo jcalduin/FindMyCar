@@ -13,6 +13,7 @@ const auth = require('./middlewares/auth');
 
 var indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
+const aparcamientosRouter = require('./routes/aparcamientos')
 
 var app = express();
 
@@ -38,6 +39,7 @@ app.use(auth);
 
 app.use('/', indexRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/aparcamientos', aparcamientosRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
