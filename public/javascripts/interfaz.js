@@ -32,6 +32,7 @@ const formRegistro = document.querySelector('#form-registro');
 const tituloModalLogin = document.querySelector('#titulo-modal-login');
 const alertaAuth = document.querySelector('#alerta-auth');
 const textoAlertaAuth = document.querySelector('#texto-alerta-auth');
+const btnLogout = document.querySelector('#btn-logout');
 
 // ===================
 // FUNCIONES DEL MENÚ  
@@ -194,11 +195,11 @@ function convertirFecha(timestamp) {
 }
 
 // funcion generica para mostrar alertas.
-function mostrarAlerta(titulo, texto, icono = 'info', esConfirmacion = false, txtConfirmar = 'Aceptar') {
+function mostrarAlerta(titulo, texto, icono = 'info', esConfirmacion = false, txtConfirmar = 'Aceptar', tiempo = null) {
 
     const colorBoton = (icono === 'warning') ? '#ef4444' : '#798BF2'; 
 
-    return Swal.fire({
+    const config = {
         title: titulo,
         text: texto,
         icon: icono,
@@ -213,7 +214,14 @@ function mostrarAlerta(titulo, texto, icono = 'info', esConfirmacion = false, tx
             confirmButton: 'rounded-xl font-bold px-6',
             cancelButton: 'rounded-xl font-medium px-6'
         }
-    });
+    };
+
+    if (tiempo) {
+        config.timer = tiempo;
+        config.showConfirmButton = false;
+    }
+
+    return Swal.fire(config);
 }
 
 // ================
@@ -414,4 +422,46 @@ formRegistro?.addEventListener('submit', async (e) => {
         console.error("Error en petición de registro:", error);
 
     }
+});
+
+// click boton logout
+btnLogout?.addEventListener('click', async () => {
+
+    try {
+       
+        const data = await AuthService.logout();
+        
+        if (data.success) {
+            
+            cerrarMenu(); 
+
+            if (data.success) {
+
+                cerrarMenu(); // Cerramos el menú para ver la alerta
+
+                mostrarAlerta(
+                    '¡Hasta pronto!', 
+                    'Has cerrado sesión correctamente.', 
+                    'success', 
+                    false, 
+                    '', 
+                    1300
+                ).then(() => {
+                    window.location.reload();
+                });
+
+            }
+        }
+
+    } catch (error) {
+
+        console.error("Error al cerrar sesión:", error);
+        mostrarAlerta(
+            'Error', 
+            'Hubo un problema al cerrar sesión.', 
+            'error'
+        );
+
+    }
+
 });
