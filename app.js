@@ -12,6 +12,7 @@ const db = require('./database/db');
 const auth = require('./middlewares/auth');
 
 var indexRouter = require('./routes/index');
+const authRouter = require('./routes/auth');
 
 var app = express();
 
@@ -36,6 +37,7 @@ app.use(session({  // Configuración del middleware de sesión, para gestionar u
 app.use(auth);
 
 app.use('/', indexRouter);
+app.use('/api/auth', authRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

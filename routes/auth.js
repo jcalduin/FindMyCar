@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const authController = require('../controllers/auth.controller');
+const authController = require('../controllers/auth-controller');
 
 //procesar el formulario de Registro
 router.post('/registro', authController.registro);
