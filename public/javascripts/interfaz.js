@@ -334,7 +334,7 @@ tabRegistro?.addEventListener('click', mostrarTabRegistro);
 formLogin?.addEventListener('submit', async (e) => {
 
     e.preventDefault(); // prevenimos el comportamiento por defecto del formulario
-    limpiarErroresAuth();
+    limpiarAlertasErroresAuth();
 
     // recogemos datos del formulario
     const nickname = document.querySelector('#login-username').value.trim();
@@ -377,7 +377,7 @@ formLogin?.addEventListener('submit', async (e) => {
 formRegistro?.addEventListener('submit', async (e) => {
 
     e.preventDefault();
-    limpiarErroresAuth();
+    limpiarAlertasErroresAuth();
 
     const email = document.querySelector('#reg-email').value.trim();
     const nickname = document.querySelector('#reg-username').value.trim();
@@ -412,6 +412,6 @@ formRegistro?.addEventListener('submit', async (e) => {
     } catch (error) {
 
         console.error("Error en petición de registro:", error);
-        
+
     }
 });
