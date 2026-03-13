@@ -1,10 +1,15 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var expressLayouts = require('express-ejs-layouts');
+require('dotenv').config();
+
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const expressLayouts = require('express-ejs-layouts');
+const session = require('express-session');
+
 const db = require('./database/db');
+const auth = require('./middlewares/auth');
 
 var indexRouter = require('./routes/index');
 
@@ -20,6 +25,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(session({  // Configuración del middleware de sesión, para gestionar usuarios logueados
+  secret : process.env.SESSION_SECRET, 
+  resave: false,
+  saveUninitialized: false,
+  cookie: {maxAge : 1000*60*60*24} 
+}))
+
+app.use(auth);
 
 app.use('/', indexRouter);
 
