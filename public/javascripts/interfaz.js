@@ -32,7 +32,6 @@ const formRegistro = document.querySelector('#form-registro');
 const tituloModalLogin = document.querySelector('#titulo-modal-login');
 const alertaAuth = document.querySelector('#alerta-auth');
 const textoAlertaAuth = document.querySelector('#texto-alerta-auth');
-const btnLogout = document.querySelector('#btn-logout');
 
 // ===================
 // FUNCIONES DEL MENÚ  
@@ -228,21 +227,52 @@ function mostrarAlerta(titulo, texto, icono = 'info', esConfirmacion = false, tx
 // LÓGICA DE DATOS 
 // ================
 
-// pintar historial
-function pintarHistorial() {
-    
-    listaHistorial.innerHTML = '';
+// function auxiliar para evitar el uso de innerHTML
+function mostrarMensajeHistorial(mensaje) {
 
-    // cogemos datros del locaslstorge
-    const historialGuardado = localStorage.getItem('historialAparcamientos');
+    listaHistorial.replaceChildren(); // Vacía la lista de forma rápida y segura
+    
+    const parrafo = document.createElement('p');
+    parrafo.className = 'text-center text-gray-500 py-8 text-sm';
+    parrafo.textContent = mensaje;
+    
+    listaHistorial.appendChild(parrafo);
+}
+
+// pintar historial
+async function pintarHistorial() {
+    
+    // mostramos mensaje de carga mientras obtenemos los datos
+    mostrarMensajeHistorial('Cargando historial...');
+
     let historial = [];
 
-    if (historialGuardado) historial = JSON.parse(historialGuardado);
+    try {
 
-    // no existe aún historial en localstorage o el historial esta vacio
+        // pedimos historial al backend
+        const respuesta = await AparcamientoService.obtenerHistorial();
+
+        if (respuesta.success && respuesta.historial) {
+            historial = respuesta.historial; // Si hay sesión, usamos los datos de SQLite
+        }
+
+    } catch (error) {
+
+        // si da error, pero tenemos datos almacenados en localhost lo mostramos
+        const historialGuardado = localStorage.getItem('historialAparcamientos');
+        if (historialGuardado) {
+            historial = JSON.parse(historialGuardado);
+        }
+
+    }
+
+    // limpiamos el mensaje de carga
+    listaHistorial.replaceChildren(); // API moderna para eliminar todos los hijos de un nodo de forma eficiente, evitando problemas de seguridad asociados al innerHTML
+
+    // si no existe datos ni en la BD ni en localstorage
     if (historial.length === 0) {
-        listaHistorial.innerHTML = '<p class="text-center text-gray-500 py-8 text-sm">Aún no tienes aparcamientos guardados.</p>';
-        return; // Detenemos la función aquí
+        mostrarMensajeHistorial('Aún no tienes aparcamientos guardados.');
+        return; 
     }
 
     // recorremos historial y pintamos las tarjetas
@@ -256,7 +286,22 @@ function pintarHistorial() {
         const btnBorrar = tarjetaClonada.querySelector('.btn-borrar-historial'); 
         btnBorrar.dataset.id = registro.id; // preparamos el id para el borrado
 
+        if (document.querySelector('#btn-logout')) {
+
+            btnBorrar.classList.add('hidden');
+
+        } else {
+
+            // Si NO está logueado, indicamos que es un registro local
+            const spanLocal = document.createElement('span');
+            spanLocal.className = 'text-[10px] bg-gray-200 px-2 py-0.5 rounded-full ml-2';
+            spanLocal.textContent = 'Local';
+            tarjetaClonada.querySelector('.txt-duracion').appendChild(spanLocal);
+
+        }
+
         listaHistorial.appendChild(tarjetaClonada);
+
     });
 }
 
@@ -428,40 +473,28 @@ formRegistro?.addEventListener('submit', async (e) => {
 btnLogout?.addEventListener('click', async () => {
 
     try {
-       
+
         const data = await AuthService.logout();
         
         if (data.success) {
+            cerrarMenu(); // Cerramos el menú para ver la alerta limpia
             
-            cerrarMenu(); 
-
-            if (data.success) {
-
-                cerrarMenu(); // Cerramos el menú para ver la alerta
-
-                mostrarAlerta(
-                    '¡Hasta pronto!', 
-                    'Has cerrado sesión correctamente.', 
-                    'success', 
-                    false, 
-                    '', 
-                    1300
-                ).then(() => {
-                    window.location.reload();
-                });
-
-            }
+            mostrarAlerta(
+                '¡Hasta pronto!', 
+                'Has cerrado sesión correctamente.', 
+                'success', 
+                false, 
+                '', 
+                1300
+            ).then(() => {
+                window.location.reload();
+            });
         }
 
     } catch (error) {
 
         console.error("Error al cerrar sesión:", error);
-        mostrarAlerta(
-            'Error', 
-            'Hubo un problema al cerrar sesión.', 
-            'error'
-        );
-
+        mostrarAlerta('Error', 'Hubo un problema al cerrar sesión.', 'error');
+        
     }
-
 });
