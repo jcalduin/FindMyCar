@@ -1,4 +1,5 @@
 // script que procesa las peticiones api de la interfaz de aparcamiento, comunicándose con el backend a través de fetch
+// servicio que gestiona las peticiones en la nube utilizando fetch para comunicarse con el backend
 
 const AparcamientoService = {
     
@@ -44,5 +45,16 @@ const AparcamientoService = {
         const respuesta = await fetch('/api/aparcamientos/historial');
         return await respuesta.json();
 
+    },
+
+    //Eliminar del historial 
+    eliminar: async (id) => {
+
+        const respuesta = await fetch(`/api/aparcamientos/${id}`, {
+            method: 'DELETE'
+        });
+        
+        return await respuesta.json();
     }
+
 };

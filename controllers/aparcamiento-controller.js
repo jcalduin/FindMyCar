@@ -95,7 +95,38 @@ const aparcamientoController = {
 
         }
         
+    },
+
+    // Eliminar un aparcamiento
+    eliminar: (req, res) => {
+
+        try {
+
+            if (!req.session.user) return res.status(401).json({ error: 'No autorizado.' });
+
+            // Cogemos el ID que nos llegará por la URL y lo pasamos al modelo para eliminarlo
+            const idAparcamiento = req.params.id; 
+
+            const borrado = AparcamientoModel.eliminar(idAparcamiento, req.session.user.id);
+
+            if (borrado) {
+
+                res.json({ success: true, message: 'Aparcamiento eliminado correctamente.' });
+
+            } else {
+
+                res.status(404).json({ error: 'Registro no encontrado o no tienes permiso.' });
+
+            }
+
+        } catch (error) {
+
+            console.error('Error al eliminar aparcamiento:', error);
+            res.status(500).json({ error: 'Error interno del servidor.' });
+            
+        }
     }
+
 };
 
 module.exports = aparcamientoController;

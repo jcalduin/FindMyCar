@@ -43,6 +43,16 @@ class AparcamientoModel {
         return db.prepare(sql).all(usuarioId);
         
     }
+
+    //Eliminar un registro del historial
+    static eliminar(id, usuarioId) {
+        
+        const sql = 'DELETE FROM aparcamientos WHERE id = ? AND usuario_id = ?';
+        const info = db.prepare(sql).run(id, usuarioId);
+        
+        return info.changes > 0; // Devuelve true si realmente se borró alguna fila
+    }
+
 }
 
 module.exports = AparcamientoModel;

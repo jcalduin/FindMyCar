@@ -286,18 +286,12 @@ async function pintarHistorial() {
         const btnBorrar = tarjetaClonada.querySelector('.btn-borrar-historial'); 
         btnBorrar.dataset.id = registro.id; // preparamos el id para el borrado
 
-        if (document.querySelector('#btn-logout')) {
-
-            btnBorrar.classList.add('hidden');
-
-        } else {
-
-            // Si NO está logueado, indicamos que es un registro local
+        // funcionalidad para eliminar registro del historial
+        if (!document.querySelector('#btn-logout')) {
             const spanLocal = document.createElement('span');
             spanLocal.className = 'text-[10px] bg-gray-200 px-2 py-0.5 rounded-full ml-2';
             spanLocal.textContent = 'Local';
             tarjetaClonada.querySelector('.txt-duracion').appendChild(spanLocal);
-
         }
 
         listaHistorial.appendChild(tarjetaClonada);
@@ -305,20 +299,46 @@ async function pintarHistorial() {
     });
 }
 
-// Elimina un aparcamiento del localstorage y refresca la vista
-function eliminarAparcamiento(id) {
+// Elimina un aparcamiento (de SQLite o LocalStorage según el estado)
+async function eliminarAparcamiento(id) {
+    
+    // Si existe el botón logout, es que estamos logueados
+    const isLogueado = document.querySelector('#btn-logout') !== null;
 
-    const historialGuardado = localStorage.getItem('historialAparcamientos');
-    if (!historialGuardado) return;
+    if (isLogueado) { // Borramos de la base de datos en la nube
 
-    let historial = JSON.parse(historialGuardado);
-    historial = historial.filter(registro => registro.id !== Number(id)); //nos devuelve un nuevo array sin el registro que queremos eliminar
+        try {
+            
+            const data = await AparcamientoService.eliminar(id);
 
-    //volvemos a guardar esa nueva lista en localsttorage
-    localStorage.setItem('historialAparcamientos', JSON.stringify(historial));
+            if (data.success) {
 
-    pintarHistorial(); 
+                pintarHistorial(); // Refrescamos la lista
 
+            } else {
+
+                mostrarAlerta('Error', data.error, 'error');
+
+            }
+
+        } catch (error) {
+
+            console.error("Error al borrar en la nube:", error);
+
+        }
+
+    } else {// Borramos del LocalStorage
+
+        const historialGuardado = localStorage.getItem('historialAparcamientos');
+        if (!historialGuardado) return;
+
+        let historial = JSON.parse(historialGuardado);
+        historial = historial.filter(registro => registro.id !== Number(id)); 
+
+        localStorage.setItem('historialAparcamientos', JSON.stringify(historial));
+        pintarHistorial();
+
+    }
 }
 
 // =====================
