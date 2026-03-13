@@ -98,7 +98,7 @@ function actualizarInterfazNoAparcado() {
  * Guarda la ubicación en localStorage si no tenemos aparcamiento en curso.
  * Si existe sesion de usuario se guarda el aparcamiento en la nube y se almacena el ID del aparcamiento para futuras referencias.
 */
-function establacerAparcamiento (latitud, longitud, guardarEnLocalStorage = false, tiempoAparcamiento = Date.now(), idAparcamientoNube = null) {
+function establacerAparcamiento (latitud, longitud, guardarEnLocalStorage = false, tiempoAparcamiento = Date.now(), idNube = null) {
 
     miMapa.setView([latitud, longitud], 18);
 
@@ -113,7 +113,7 @@ function establacerAparcamiento (latitud, longitud, guardarEnLocalStorage = fals
     actualizarInterfazAparcado();
     iniciarRelojAparcamiento(tiempoAparcamiento);
     
-    idAparcamientoNube = idAparcamientoNube; 
+    idAparcamientoNube = idNube;
 
     if (guardarEnLocalStorage) {
 
@@ -121,7 +121,7 @@ function establacerAparcamiento (latitud, longitud, guardarEnLocalStorage = fals
             latitud: latitud,
             longitud: longitud,
             timestamp : Date.now(),
-            idAparcamientoNube : idAparcamientoNube
+            idAparcamientoNube : idNube
         };
 
         localStorage.setItem('aparcamientoEnCurso', JSON.stringify(datosAparcamiento));
@@ -140,33 +140,38 @@ function establacerAparcamiento (latitud, longitud, guardarEnLocalStorage = fals
 */
 async function limpiarAparcamiento() {
 
+    const fin = Date.now();
+    let minutosTotales = null;
+
+    if (horaAparcamiento) {
+        minutosTotales = Math.round((fin - horaAparcamiento) / 60000);
+    }
+
+    if (idAparcamientoNube) {
+
+        try {
+
+            await AparcamientoService.finalizar(idAparcamientoNube, fin, minutosTotales);
+
+        } catch (error) {
+
+            console.error("Error al finalizar el aparcamiento en la nube: ", error);
+
+        }
+
+    }
+
     const parkingGuardadoEnCurso = localStorage.getItem('aparcamientoEnCurso');
 
     if (parkingGuardadoEnCurso) {
 
         const datosAparcamiento = JSON.parse(parkingGuardadoEnCurso);
-
-        const fin = Date.now();
-        const minutosTotales = Math.round((fin - datosAparcamiento.timestamp) / 60000);
-
-        if (datosAparcamiento.idAparcamientoNube) {
-
-            try {
-
-                await AparcamientoService.finalizar(datosAparcamiento.idNube, fin, minutos);
-
-            } catch (error) {
-
-                console.error("Error al finalizar el aparcamiento en la nube: ", error);
-
-            }
-
-        }
-
-        guardarHistorialLocalStorage(datosAparcamiento); // guardamos el aparcamiento finalizado en el historial del localStorag
+        guardarHistorialLocalStorage(datosAparcamiento);
+        localStorage.removeItem('aparcamientoEnCurso'); 
 
     }
 
+    // limpieza visual del mapa
     if (marcadorCoche) {
 
         miMapa.removeLayer(marcadorCoche);
@@ -344,7 +349,7 @@ function iniciarAparcamiento() {
 
             } catch (error) {
                 
-                console.log("Guardando aparcamiento solo en modo local.");
+                console.error("Fallo al guardar en la nube (Cayendo a modo local):", error);
 
             }
 
@@ -446,7 +451,7 @@ function iniciarSeguimiento() {
 */
 async function inicializarApp() {
     
-    // Primero preguntamos a la Base de Dato
+    // Intentamos obtener el estado del aparcamiento desde la base de datos del servidor
     try {
 
         const respuesta = await AparcamientoService.obtenerActivo();
@@ -464,6 +469,7 @@ async function inicializarApp() {
     } catch (error) {
         // Ignoramos si no hay red o es usuario invitado
     }
+    
 
     // Si el servidor no responde, miramos en localStorage por si hay un aparcamiento en curso guardado localmente
     const parkingGuardadoEnCurso = localStorage.getItem('aparcamientoEnCurso');
@@ -471,7 +477,8 @@ async function inicializarApp() {
     if (parkingGuardadoEnCurso) {
 
         const datosAparcamiento = JSON.parse(parkingGuardadoEnCurso);
-        establacerAparcamiento(datosAparcamiento.latitud, datosAparcamiento.longitud, false, datosAparcamiento.timestamp, datosAparcamiento.idNube);
+        const idNubeRecuperado = datosAparcamiento.idAparcamientoNube ?? datosAparcamiento.idNube ?? null;
+        establacerAparcamiento(datosAparcamiento.latitud, datosAparcamiento.longitud, false, datosAparcamiento.timestamp, idNubeRecuperado);
         iniciarSeguimiento(); 
     }
 }
