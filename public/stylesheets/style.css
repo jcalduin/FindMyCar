@@ -522,6 +522,9 @@
   .border-red-200 {
     border-color: var(--color-red-200);
   }
+  .border-red-500 {
+    border-color: var(--color-red-500);
+  }
   .border-white {
     border-color: var(--color-white);
   }
@@ -808,6 +811,9 @@
     @supports (color: color-mix(in lab, red, red)) {
       --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, var(--color-brand-primary) 30%, transparent) var(--tw-shadow-alpha), transparent);
     }
+  }
+  .ring-red-500 {
+    --tw-ring-color: var(--color-red-500);
   }
   .outline {
     outline-style: var(--tw-outline-style);

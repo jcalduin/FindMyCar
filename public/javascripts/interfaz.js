@@ -31,6 +31,7 @@ const formLogin = document.querySelector('#form-login');
 const formRegistro = document.querySelector('#form-registro');
 const tituloModalLogin = document.querySelector('#titulo-modal-login');
 const alertaAuth = document.querySelector('#alerta-auth');
+const textoAlertaAuth = document.querySelector('#texto-alerta-auth');
 
 // ===================
 // FUNCIONES DEL MENÚ  
@@ -123,6 +124,17 @@ function cerrarModalLogin() {
     modalLogin.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
 }
 
+// limpiar alertas de errores del modal registro/login
+function limpiarAlertasErroresAuth() {
+
+    alertaAuth.classList.add('hidden');
+
+    document.querySelectorAll('.input-auth').forEach(input => {
+        input.classList.remove('border-red-500', 'bg-red-50');
+    });
+
+}
+
 // cambiar pestaña registro -> login
 function mostrarTabLogin() {
     
@@ -131,7 +143,7 @@ function mostrarTabLogin() {
     
     tituloModalLogin.textContent = 'Bienvenido';
 
-    alertaAuth.classList.add('hidden'); // ocultamos las posibles alertas
+    limpiarAlertasErroresAuth(); // limpiamos cualquier alerta de error que pudiera haber
 
     //pestaña login
     tabLogin.classList.add('bg-white', 'text-brand-primary', 'shadow-sm', 'font-bold');
@@ -150,7 +162,7 @@ function mostrarTabRegistro() {
     
     tituloModalLogin.textContent = 'Crear Cuenta';
 
-    alertaAuth.classList.add('hidden');
+    limpiarAlertasErroresAuth(); // limpiamos cualquier alerta de error que pudiera haber
 
     // pestaña registro
     tabRegistro.classList.add('bg-white', 'text-brand-primary', 'shadow-sm', 'font-bold');
@@ -216,9 +228,8 @@ function pintarHistorial() {
     // cogemos datros del locaslstorge
     const historialGuardado = localStorage.getItem('historialAparcamientos');
     let historial = [];
-    if (historialGuardado) {
-        historial = JSON.parse(historialGuardado);
-    }
+
+    if (historialGuardado) historial = JSON.parse(historialGuardado);
 
     // no existe aún historial en localstorage o el historial esta vacio
     if (historial.length === 0) {
@@ -261,6 +272,8 @@ function eliminarAparcamiento(id) {
 // Manejador de eventos
 // =====================
 
+// ========= menú lateral y modal historial ======== (siempre existen en el DOM)
+
 // click menu haburguesa
 btnAbrirMenu.addEventListener('click', abrirMenu);
 
@@ -300,17 +313,105 @@ listaHistorial.addEventListener('click', async (e) => {
 
 });
 
+// ========= modales y formularios de auth ======== (se añade ?. porque puede no renderizar si el usuario esta login)
+
 // click boton mostrar login/registro
-btnAbrirLogin.addEventListener('click', abrirModalLogin);
+btnAbrirLogin?.addEventListener('click', abrirModalLogin);
 
 // click cerrar modal login/registro "X"
-btnCerrarLogin.addEventListener('click', cerrarModalLogin);
+btnCerrarLogin?.addEventListener('click', cerrarModalLogin);
 
 // click fuera del modal de login/registro (en el backdrop)
-modalLoginBackdrop.addEventListener('click', cerrarModalLogin);
+modalLoginBackdrop?.addEventListener('click', cerrarModalLogin);
 
 // tab pestaña login
-tabLogin.addEventListener('click', mostrarTabLogin);
+tabLogin?.addEventListener('click', mostrarTabLogin);
 
 // tab pestaña registro
-tabRegistro.addEventListener('click', mostrarTabRegistro);
+tabRegistro?.addEventListener('click', mostrarTabRegistro);
+
+// submit formulario login
+formLogin?.addEventListener('submit', async (e) => {
+
+    e.preventDefault(); // prevenimos el comportamiento por defecto del formulario
+    limpiarErroresAuth();
+
+    // recogemos datos del formulario
+    const nickname = document.querySelector('#login-username').value.trim();
+    const password = document.querySelector('#login-password').value;
+
+    try {
+
+        const data = await AuthService.login(nickname, password);
+
+        if (data.error) {
+
+            alertaAuth.classList.remove('hidden');
+            textoAlertaAuth.textContent = data.error;
+
+            document.querySelector('#login-username').classList.add('border-red-500', 'bg-red-50');
+            document.querySelector('#login-password').classList.add('border-red-500', 'bg-red-50');
+
+        } else if (data.success) {
+
+            cerrarModalLogin();
+
+            mostrarAlerta(
+                '¡Éxito!', 
+                data.message, 
+                'success'
+            );
+
+            setTimeout(() => window.location.reload(), 1500);
+            
+        }
+
+    } catch (error) {
+
+        console.error("Error en petición de login:", error);
+
+    }
+});
+
+// submit formulario registro
+formRegistro?.addEventListener('submit', async (e) => {
+
+    e.preventDefault();
+    limpiarErroresAuth();
+
+    const email = document.querySelector('#reg-email').value.trim();
+    const nickname = document.querySelector('#reg-username').value.trim();
+    const password = document.querySelector('#reg-password').value;
+    const passwordConfirm = document.querySelector('#reg-password-confirm').value;
+
+    try {
+
+        const data = await AuthService.registro({ email, nickname, password, passwordConfirm });
+
+        if (data.error) {
+
+            alertaAuth.classList.remove('hidden');
+            textoAlertaAuth.textContent = data.error;
+            
+            formRegistro.querySelectorAll('.input-auth').forEach(i => i.classList.add('border-red-500', 'bg-red-50'));
+
+        } else if (data.success) {
+
+            cerrarModalLogin();
+
+            mostrarAlerta(
+                '¡Cuenta Creada!', 
+                data.message, 
+                'success'
+            );
+
+            setTimeout(() => window.location.reload(), 1500);
+
+        }
+
+    } catch (error) {
+
+        console.error("Error en petición de registro:", error);
+        
+    }
+});
