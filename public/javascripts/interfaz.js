@@ -32,6 +32,7 @@ const formRegistro = document.querySelector('#form-registro');
 const tituloModalLogin = document.querySelector('#titulo-modal-login');
 const alertaAuth = document.querySelector('#alerta-auth');
 const textoAlertaAuth = document.querySelector('#texto-alerta-auth');
+const btnLogout = document.querySelector('#btn-logout');
 
 // ===================
 // FUNCIONES DEL MENÚ  
@@ -246,6 +247,7 @@ async function pintarHistorial() {
     mostrarMensajeHistorial('Cargando historial...');
 
     let historial = [];
+    let datosObtenidosBD = false; // para saber si hemos recibido respuesta del backend o no.
 
     try {
 
@@ -254,17 +256,27 @@ async function pintarHistorial() {
 
         if (respuesta.success && respuesta.historial) {
             historial = respuesta.historial; // Si hay sesión, usamos los datos de SQLite
+        } else {
+            datosObtenidosBD = true; // Si no hay sesión, marcamos que hemos recibido respuesta del backend (aunque sea vacía) para no cargar el localStorage
         }
 
     } catch (error) {
 
-        // si da error, pero tenemos datos almacenados en localhost lo mostramos
+        datosObtenidosBD = true; // Si hay error en la petición, marcamos que hemos recibido respuesta del backend para no cargar el localStorage
+
+    }
+
+    // si hubo cualquier tipo de error con la nube leemos del localstorage
+    if (datosObtenidosBD) {
+
         const historialGuardado = localStorage.getItem('historialAparcamientos');
+
         if (historialGuardado) {
             historial = JSON.parse(historialGuardado);
         }
 
     }
+
 
     // limpiamos el mensaje de carga
     listaHistorial.replaceChildren(); // API moderna para eliminar todos los hijos de un nodo de forma eficiente, evitando problemas de seguridad asociados al innerHTML
