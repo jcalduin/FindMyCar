@@ -366,7 +366,9 @@ btnAbrirMenu.addEventListener('click', abrirMenu);
 btnCerrarMenu.addEventListener('click', cerrarMenu);
 
 // click fuera del menu (en el backdrop)
-menuBackdrop.addEventListener('click', cerrarMenu);
+menuBackdrop.addEventListener('click', (e) => {
+    if (e.target === menuBackdrop) cerrarMenu();
+});
 
 // click boton mostrar historial
 btnAbrirHistorial.addEventListener('click', abrirModalHistorial);
@@ -375,7 +377,9 @@ btnAbrirHistorial.addEventListener('click', abrirModalHistorial);
 btnCerrarModal.addEventListener('click', cerrarModalHistorial);
 
 // click fuera del modal (en el backdrop)
-modalHistorialBackdrop.addEventListener('click', cerrarModalHistorial);
+modalHistorial.addEventListener('click', (e) => {
+    if (e.target === modalHistorial) cerrarModalHistorial();
+});
 
 // click en la papelera para eliminar el registro
 listaHistorial.addEventListener('click', async (e) => {
@@ -407,7 +411,9 @@ btnAbrirLogin?.addEventListener('click', abrirModalLogin);
 btnCerrarLogin?.addEventListener('click', cerrarModalLogin);
 
 // click fuera del modal de login/registro (en el backdrop)
-modalLoginBackdrop?.addEventListener('click', cerrarModalLogin);
+modalLogin?.addEventListener('click', (e) => {
+    if (e.target === modalLogin) cerrarModalLogin();
+});
 
 // tab pestaña login
 tabLogin?.addEventListener('click', mostrarTabLogin);
