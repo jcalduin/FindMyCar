@@ -131,7 +131,7 @@ function limpiarAlertasErroresAuth() {
     alertaAuth.classList.add('hidden');
 
     document.querySelectorAll('.input-auth').forEach(input => {
-        input.classList.remove('border-red-500', 'bg-red-50');
+        input.classList.remove('border-red-500');
     });
 
 }
@@ -440,8 +440,8 @@ formLogin?.addEventListener('submit', async (e) => {
             alertaAuth.classList.remove('hidden');
             textoAlertaAuth.textContent = data.error;
 
-            document.querySelector('#login-username').classList.add('border-red-500', 'bg-red-50');
-            document.querySelector('#login-password').classList.add('border-red-500', 'bg-red-50');
+            document.querySelector('#login-username').classList.add('border-red-500');
+            document.querySelector('#login-password').classList.add('border-red-500');
 
         } else if (data.success) {
 
@@ -483,8 +483,22 @@ formRegistro?.addEventListener('submit', async (e) => {
 
             alertaAuth.classList.remove('hidden');
             textoAlertaAuth.textContent = data.error;
+
+            // si el backend devuelve los campos fallidos
+            if (data.camposFallidos) {
+
+                Object.keys(data.camposFallidos).forEach(campo => {
+
+                    const inputError = document.querySelector(`#reg-${campo}`);
+                    if (inputError) {
+                        inputError.classList.add('border-red-500');
+                    }
+                })
+
+            } else {
+                formRegistro.querySelectorAll('.input-auth').forEach(i => i.classList.add('border-red-500'));
+            }
             
-            formRegistro.querySelectorAll('.input-auth').forEach(i => i.classList.add('border-red-500', 'bg-red-50'));
 
         } else if (data.success) {
 

@@ -9,26 +9,32 @@ const authController = {
             // Extraemos los datos
             const { email, nickname, password, passwordConfirm } = req.body;
 
-            // Validamos que no haya campos vacios
-            if (!email || !nickname || !password || !passwordConfirm) {
-                return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+            let errores = {};
+
+            //Validamos los datos y guardamos los errores en un objeto
+            if (!email) errores.email = true;
+            if (!nickname) errores.username = true;
+
+            if (!password !== passwordConfirm) {
+                errores.password = true;
+                errores['password-confirm'] = true;
             }
 
-            // Validación de que contraseñas coincidan
-            if (password !== passwordConfirm) {
-                return res.status(400).json({ error: 'Las contraseñas no coinciden.' });
+            if (email && UsuarioModel.buscarPorEmail(email)) {
+                errores.email = true;
             }
 
-            // Validación comprobar si el nickname ya existe
-            const existeNickname = UsuarioModel.buscarPorNickname(nickname);
-            if (existeNickname) {
-                return res.status(400).json({ error: 'Ese nombre de usuario ya está en uso.' });
+            if (nickname && UsuarioModel.buscarPorNickname(nickname)) {
+                errores.username = true;
             }
 
-            // Validación comprobar si el email ya existe
-            const existeEmail = UsuarioModel.buscarPorEmail(email);
-            if (existeEmail) {
-                return res.status(400).json({ error: 'Ese correo electrónico ya está registrado.' });
+            // Si hay errores, los devolvemos al cliente
+            if (Object.keys(errores).length > 0) {
+                return res.status(400).json({
+                    success : false,
+                    error : 'Por favor, revisa los campos marcados en rojo',
+                    camposFallidos : errores
+                })
             }
 
             // hash de la contraseña 
