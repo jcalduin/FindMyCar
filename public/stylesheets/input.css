@@ -15,3 +15,20 @@
     margin-top: 5rem; /* Unos 80px hacia abajo */
   }
 }
+
+@layer base {
+  /* Hacemos que todo lo interactivo tenga la manita por defecto */
+  button, 
+  a, 
+  [role="button"], 
+  input[type="submit"], 
+  input[type="button"] {
+    cursor: pointer;
+  }
+
+  /* Y si está desactivado, cursor de prohibido */
+  button:disabled, 
+  input:disabled {
+    cursor: not-allowed;
+  }
+}
