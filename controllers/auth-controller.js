@@ -15,7 +15,7 @@ const authController = {
             if (!email) errores.email = true;
             if (!nickname) errores.username = true;
 
-            if (!password !== passwordConfirm) {
+            if (password !== passwordConfirm) {
                 errores.password = true;
                 errores['password-confirm'] = true;
             }

@@ -479,6 +479,8 @@ formRegistro?.addEventListener('submit', async (e) => {
 
         const data = await AuthService.registro({ email, nickname, password, passwordConfirm });
 
+        console.log("Respuesta del registro:", data); // Log para depuración
+
         if (data.error) {
 
             alertaAuth.classList.remove('hidden');
