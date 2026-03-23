@@ -14,12 +14,14 @@ const modalHistorial = document.querySelector('#modal-historial');
 const modalHistorialBackdrop = document.querySelector('#modal-historial-backdrop');
 const btnCerrarModal = document.querySelector('#btn-cerrar-modal');
 const listaHistorial = document.querySelector('#lista-historial');
+const listaHistorialDesktop = document.querySelector('#lista-historial-desktop');
 const templateTarjeta = document.querySelector('#template-tarjeta-aparcamiento');
 
 // ==========================================
 // ELEMENTOS DEL DOM (Modal Login/Registro)
 // ==========================================
 const btnAbrirLogin = document.querySelector('#btn-login'); //menu lateral
+const btnLoginDesktop = document.querySelector('#btn-login-desktop');
 const modalLogin = document.querySelector('#modal-login');
 const modalLoginBackdrop = document.querySelector('#modal-login-backdrop');
 const btnCerrarLogin = document.querySelector('#btn-cerrar-login');
@@ -33,6 +35,7 @@ const tituloModalLogin = document.querySelector('#titulo-modal-login');
 const alertaAuth = document.querySelector('#alerta-auth');
 const textoAlertaAuth = document.querySelector('#texto-alerta-auth');
 const btnLogout = document.querySelector('#btn-logout');
+const btnLogoutDesktop = document.querySelector('#btn-logout-desktop');
 
 // ===================
 // FUNCIONES DEL MENÚ  
@@ -174,6 +177,31 @@ function mostrarTabRegistro() {
     tabLogin.classList.add('text-gray-500', 'hover:text-gray-700', 'font-medium');
 }
 
+//procesar cierre de sesion en mobile y desktop
+async function procesarLogout() {
+    try {
+        const data = await AuthService.logout();
+        
+        if (data.success) {
+            cerrarMenu(); // Cerramos el menú para ver la alerta limpia
+            
+            mostrarAlerta(
+                '¡Hasta pronto!', 
+                'Has cerrado sesión correctamente.', 
+                'success', 
+                false, 
+                '', 
+                1300
+            ).then(() => {
+                window.location.reload();
+            });
+        }
+    } catch (error) {
+        console.error("Error al cerrar sesión:", error);
+        mostrarAlerta('Error', 'Hubo un problema al cerrar sesión.', 'error');
+    }
+}
+
 // ===========
 // UTILIDADES
 // ===========
@@ -231,13 +259,14 @@ function mostrarAlerta(titulo, texto, icono = 'info', esConfirmacion = false, tx
 // function auxiliar para evitar el uso de innerHTML
 function mostrarMensajeHistorial(mensaje) {
 
-    listaHistorial.replaceChildren(); // Vacía la lista de forma rápida y segura
-    
     const parrafo = document.createElement('p');
     parrafo.className = 'text-center text-gray-500 py-8 text-sm';
     parrafo.textContent = mensaje;
     
-    listaHistorial.appendChild(parrafo);
+    listaHistorial.replaceChildren(parrafo.cloneNode(true)); 
+
+    if(listaHistorialDesktop) listaHistorialDesktop.replaceChildren(parrafo.cloneNode(true));
+
 }
 
 // pintar historial
@@ -280,12 +309,15 @@ async function pintarHistorial() {
 
     // limpiamos el mensaje de carga
     listaHistorial.replaceChildren(); // API moderna para eliminar todos los hijos de un nodo de forma eficiente, evitando problemas de seguridad asociados al innerHTML
+    if(listaHistorialDesktop) listaHistorialDesktop.replaceChildren();
 
     // si no existe datos ni en la BD ni en localstorage
     if (historial.length === 0) {
         mostrarMensajeHistorial('Aún no tienes aparcamientos guardados.');
         return; 
     }
+
+    const isLogueado = document.querySelector('#btn-logout') !== null;
 
     // recorremos historial y pintamos las tarjetas
     historial.forEach(registro => {
@@ -299,14 +331,15 @@ async function pintarHistorial() {
         btnBorrar.dataset.id = registro.id; // preparamos el id para el borrado
 
         // funcionalidad para eliminar registro del historial
-        if (!document.querySelector('#btn-logout')) {
+        if (!isLogueado) {
             const spanLocal = document.createElement('span');
             spanLocal.className = 'text-[10px] bg-gray-200 px-2 py-0.5 rounded-full ml-2';
             spanLocal.textContent = 'Local';
             tarjetaClonada.querySelector('.txt-duracion').appendChild(spanLocal);
         }
 
-        listaHistorial.appendChild(tarjetaClonada);
+        listaHistorial.appendChild(tarjetaClonada.cloneNode(true));
+        if(listaHistorialDesktop) listaHistorialDesktop.appendChild(tarjetaClonada.cloneNode(true));
 
     });
 }
@@ -353,6 +386,26 @@ async function eliminarAparcamiento(id) {
     }
 }
 
+// procesar borrado de historial capturando el click en le evento papelera
+async function manejarBorradoHistorial(e) {
+
+    const btnBorrar = e.target.closest('.btn-borrar-historial');
+
+    if (btnBorrar) {
+        const idAparcamiento = btnBorrar.dataset.id;
+        const respuesta = await mostrarAlerta(
+            '¿Eliminar aparcamiento?',
+            'Esta ubicacion se borrar para siempre',
+            'warning',
+            true,
+            'Eliminar'
+        );
+
+        if (respuesta.isConfirmed) eliminarAparcamiento(idAparcamiento);
+    }
+
+}
+
 // =====================
 // Manejador de eventos
 // =====================
@@ -381,31 +434,15 @@ modalHistorial.addEventListener('click', (e) => {
     if (e.target === modalHistorial) cerrarModalHistorial();
 });
 
-// click en la papelera para eliminar el registro
-listaHistorial.addEventListener('click', async (e) => {
-
-    const btnBorrar = e.target.closest('.btn-borrar-historial');
-
-    if (btnBorrar) {
-
-        const idAparcamiento = btnBorrar.dataset.id;
-
-        const respuesta = await mostrarAlerta(
-            '¿Eliminar aparcamiento?',
-            'Esta ubicacion se borrar para siempre',
-            true,
-            'eliminar'
-        );
-
-        if (respuesta.isConfirmed) eliminarAparcamiento(idAparcamiento);
-    }
-
-});
+// click en la papelera para eliminar el registro (Móvil y PC)
+listaHistorial.addEventListener('click', manejarBorradoHistorial); 
+if(listaHistorialDesktop) listaHistorialDesktop.addEventListener('click', manejarBorradoHistorial);
 
 // ========= modales y formularios de auth ======== (se añade ?. porque puede no renderizar si el usuario esta login)
 
 // click boton mostrar login/registro
 btnAbrirLogin?.addEventListener('click', abrirModalLogin);
+btnLoginDesktop?.addEventListener('click', abrirModalLogin);
 
 // click cerrar modal login/registro "X"
 btnCerrarLogin?.addEventListener('click', cerrarModalLogin);
@@ -523,32 +560,11 @@ formRegistro?.addEventListener('submit', async (e) => {
     }
 });
 
-// click boton logout
-btnLogout?.addEventListener('click', async () => {
+// click boton logout (Móvil y PC)
+btnLogout?.addEventListener('click', procesarLogout); 
+btnLogoutDesktop?.addEventListener('click', procesarLogout); 
 
-    try {
-
-        const data = await AuthService.logout();
-        
-        if (data.success) {
-            cerrarMenu(); // Cerramos el menú para ver la alerta limpia
-            
-            mostrarAlerta(
-                '¡Hasta pronto!', 
-                'Has cerrado sesión correctamente.', 
-                'success', 
-                false, 
-                '', 
-                1300
-            ).then(() => {
-                window.location.reload();
-            });
-        }
-
-    } catch (error) {
-
-        console.error("Error al cerrar sesión:", error);
-        mostrarAlerta('Error', 'Hubo un problema al cerrar sesión.', 'error');
-        
-    }
-});
+// ==========================================
+// INICIALIZACIÓN
+// ==========================================
+pintarHistorial();
