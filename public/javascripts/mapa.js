@@ -296,7 +296,9 @@ function finalizarAparcamiento() {
         confirmButtonColor : '#627FD9',
         cancelButtonColor : '#d33',
         confirmButtonText : 'Sí, finalizar',
-        cancelButtonText : 'No, seguir aparcado'
+        cancelButtonText : 'No, seguir aparcado',
+        scrollbarPadding: false, // Evita que aparezca un espacio en la derecha al mostrar el modal
+        heightAuto: false, // Evita que el modal cambie de tamaño automáticamente según su contenido
     }).then((result) => {
 
         if (result.isConfirmed) {

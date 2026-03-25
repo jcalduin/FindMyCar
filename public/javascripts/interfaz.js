@@ -236,6 +236,8 @@ function mostrarAlerta(titulo, texto, icono = 'info', esConfirmacion = false, tx
         cancelButtonColor: '#9ca3af',
         confirmButtonText: txtConfirmar,
         cancelButtonText: 'Cancelar',
+        scrollbarPadding: false, // Evita que aparezca un espacio en la derecha al mostrar el modal
+        heightAuto: false, // Evita que el modal cambie de tamaño automáticamente según su contenido
         customClass: {
             popup: 'rounded-3xl w-11/12 max-w-sm border border-gray-100 shadow-2xl',
             title: 'text-brand-primary font-bold text-xl',
